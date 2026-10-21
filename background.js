@@ -16,7 +16,7 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
       id: "gttBatchCheck",
       parentId: "gttParent",
-      title: "Analyze large text region for common errors & false positives",
+      title: "Analyze selection of snippets for common errors & false positives",
       contexts: ["selection"]
     });
   });
@@ -31,11 +31,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "gttPhraseCheck") {
     searchTerms = `English grammar and usage check please: "${rawText}"`;
   } else if (info.menuItemId === "gttBatchCheck") {
-    searchTerms = `Please analyse these snippets for any repeated or usage errors - and also if there are false positives/edge cases:\n\n${rawText}`;
+    searchTerms = `Please analyse these snippets for any repeated grammar or usage errors - and also if there are false positives/edge cases:\n\n${rawText}`;
   }
 
   if (searchTerms) {
-    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchTerms)}`;
+    const searchUrl = `https://www.google.com/search?udm=50&q=${encodeURIComponent(searchTerms)}`;
     const config = { url: searchUrl };
     
     if (tab && typeof tab.index === "number") {
