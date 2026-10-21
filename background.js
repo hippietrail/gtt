@@ -1,23 +1,43 @@
 chrome.runtime.onInstalled.addListener(() => {
-  // Clear any existing menu items first to avoid duplicate ID errors on reload
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
-      id: "gttSimple",
-      title: "Ask Google to check grammar on this snippet",
+      id: "gttParent",
+      title: "GTT",
+      contexts: ["selection"]
+    });
+
+    chrome.contextMenus.create({
+      id: "gttPhraseCheck",
+      parentId: "gttParent",
+      title: "Check if phrase is ungrammatical or rare usage",
+      contexts: ["selection"]
+    });
+
+    chrome.contextMenus.create({
+      id: "gttBatchCheck",
+      parentId: "gttParent",
+      title: "Analyze large text region for common errors & false positives",
       contexts: ["selection"]
     });
   });
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "gttSimple" && info.selectionText) {
-    const rawText = info.selectionText.trim();
-    const searchTerms = `English grammar and usage check please: ${rawText}`;
+  if (!info.selectionText) return;
+  
+  const rawText = info.selectionText.trim();
+  let searchTerms = "";
+
+  if (info.menuItemId === "gttPhraseCheck") {
+    searchTerms = `English grammar and usage check please: "${rawText}"`;
+  } else if (info.menuItemId === "gttBatchCheck") {
+    searchTerms = `Please analyse these snippets for any repeated or usage errors - and also if there are false positives/edge cases:\n\n${rawText}`;
+  }
+
+  if (searchTerms) {
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchTerms)}`;
-    const config = {
-      url: searchUrl
-    };
-    // Safely place the new tab directly next to the active tab if available
+    const config = { url: searchUrl };
+    
     if (tab && typeof tab.index === "number") {
       config.index = tab.index + 1;
     }
